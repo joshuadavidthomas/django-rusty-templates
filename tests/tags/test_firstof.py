@@ -71,6 +71,21 @@ def test_firstof_missing_argument_error(assert_parse_error):
     )
 
 
+def test_firstof_incomplete_kwarg_error(assert_parse_error):
+    assert_parse_error(
+        template="{% firstof a= %}",
+        django_message="Could not parse the remainder: '=' from 'a='",
+        rusty_message=snapshot("""\
+  × Incomplete keyword argument
+   ╭────
+ 1 │ {% firstof a= %}
+   ·            ─┬
+   ·             ╰── here
+   ╰────
+"""),
+    )
+
+
 def test_firstof_invalid_as_usage_error(assert_render):
     assert_render(
         template="{% firstof a as %}",
@@ -92,4 +107,44 @@ def test_firstof_too_many_arguments_after_as(assert_render):
         template="{% firstof a as b c %}",
         context={"a": 0, "as": "foo", "b": "bar", "c": "baz"},
         expected="foo",
+    )
+
+
+def test_firstof_returns_first_truthy_value(assert_render):
+    assert_render(
+        template="{% firstof a b %}",
+        context={"a": 0, "b": 2},
+        expected="2",
+    )
+
+
+def test_firstof_sets_asvar_when_truthy(assert_render):
+    assert_render(
+        template="{% firstof a b as out %}{{ out }}",
+        context={"a": 0, "b": 3},
+        expected="3",
+    )
+
+
+def test_firstof_sets_asvar_empty_when_all_false(assert_render):
+    assert_render(
+        template="{% firstof a b as out %}{{ out }}",
+        context={"a": 0, "b": 0},
+        expected="",
+    )
+
+
+def test_firstof_numeric_literals(assert_render):
+    assert_render(
+        template="{% firstof 0 1 %}",
+        context={},
+        expected="1",
+    )
+
+
+def test_firstof_existing_false_then_truthy(assert_render):
+    assert_render(
+        template="{% firstof a b %}",
+        context={"a": "", "b": "ok"},
+        expected="ok",
     )
