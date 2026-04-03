@@ -53,14 +53,13 @@ impl Token {
 
 impl DelimitedToken for Token {
     fn trimmed_at(&self) -> At {
-        let (start, len) = self.at;
-        let start = start + START_TAG_LEN;
-        let len = len - START_TAG_LEN - END_TAG_LEN;
-        match self.token_type {
-            TokenType::Text => self.at,
-            TokenType::Variable => (start, len),
-            TokenType::Tag => (start, len),
-            TokenType::Comment => (start, len),
+        if matches!(self.token_type, TokenType::Text) {
+            self.at
+        } else {
+            let (start, len) = self.at;
+            let start = start + START_TAG_LEN;
+            let len = len - START_TAG_LEN - END_TAG_LEN;
+            (start, len)
         }
     }
 }
@@ -489,5 +488,14 @@ mod tests {
             contents(template, tokens),
             vec![" verbatim ", "Don't end verbatim"]
         );
+    }
+
+    #[test]
+    fn test_trimmed_at_doesnt_panic() {
+        assert_eq!(Token::text((34, 1)).trimmed_at(), (34, 1));
+        assert_eq!(Token::text((34, 20)).trimmed_at(), (34, 20));
+        assert_eq!(Token::tag((34, 5)).trimmed_at(), (36, 1));
+        assert_eq!(Token::variable((34, 5)).trimmed_at(), (36, 1));
+        assert_eq!(Token::comment((34, 5)).trimmed_at(), (36, 1));
     }
 }
