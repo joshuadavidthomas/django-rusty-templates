@@ -8,7 +8,10 @@ However, due to both legal and human reasons, we have to establish boundaries.
 > [!CAUTION]
 > **TL;DR:**
 > - We take the responsibility for this project very seriously and we expect you to take your responsibility for your contributions seriously, too.
->   This used to be a given, but it changed now that a pull request is just one prompt away.
+>
+> - Do not use LLMs when working on a "good first issue".
+>   These are reserved for new contributors to upskill on the project.
+>   Using an LLM robs both you and other contributors of a learning experience.
 >
 > - Every contribution has to be backed by a human who unequivocally owns the copyright for all changes.
 >   No LLM bots in `Co-authored-by:`s.
@@ -37,8 +40,13 @@ Therefore, allowing contributions by LLMs has unpredictable consequences for the
 
 ## Human
 
-As the makers of software that is used by millions of people worldwide and with a reputation for high-quality maintenance, we take our responsibility to our users very seriously.
-No matter what LLM vendors or boosters on LinkedIn tell you, we have to manually review every change before merging, because it's **our responsibility** to keep the project stable.
+Django Rusty Templates is designed for humans first.
+It is a place for learning how to use Rust and Python together, by writing and reviewing code together.
+Issues marked with "good first issue" are reserved for new contributors to get familiar with the project.
+Using an LLM to implement these removes the potential learning experience for you and other new contributors.
+
+Django Rusty Templates is also committed to being a high quality library.
+This means that every pull request is carefully reviewed by one or more maintainers, which takes time and effort.
 
 Please understand that by opening low-quality pull requests you're not helping anyone.
 Worse, you're [poisoning the open source ecosystem](https://lwn.net/Articles/1058266/) that was precarious even before the arrival of LLM tools.
@@ -54,9 +62,10 @@ This dynamic is especially pernicious because it poisons the well for mentoring 
 In practice, this means:
 
 - Pull requests that have an LLM product listed as co-author can't be merged and will be closed without further discussion.
-  We cannot risk the copyright status of this project.
 
   If you used LLM tools during development, you may still submit – but you must remove any LLM co-author tags and take full ownership of every line.
+  Please disclose a summary of how the LLM was used in your pull request description.
+  Your pull request description should be written by **you**, not by the LLM.
 
 - By submitting a pull request, **you** take full **technical and legal** responsibility for the contents of the pull request and promise that **you** hold the copyright for the changes submitted.
 
