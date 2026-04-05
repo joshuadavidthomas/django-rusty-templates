@@ -797,15 +797,29 @@ def test_missing_argument_after_for_loop(assert_render_error):
     )
 
 
-def test_for_tag_unpack04(assert_render):
+def test_for_tag_with_two_variable_names_with_whitespace(assert_render):
     template = "{% for key , value in items %}{{ key }}:{{ value }}/{% endfor %}"
     context = {"items": (("one", 1), ("two", 2))}
     expected = "one:1/two:2/"
     assert_render(template=template, context=context, expected=expected)
 
 
-def test_for_tag_unpack05(assert_render):
-    template = "{% for num1, num2, num3, num4 in items %}{{ num1 }}{{ num2 }}{{ num3 }}{{ num4 }}/{% endfor %}"
+def test_for_tag_with_two_variable_names_without_whitespace(assert_render):
+    template = "{% for key,value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    context = {"items": (("one", 1), ("two", 2))}
+    expected = "one:1/two:2/"
+    assert_render(template=template, context=context, expected=expected)
+
+
+def test_for_tag_with_more_variable_names_with_whitespace(assert_render):
+    template = "{% for num1 , num2 , num3 , num4 in items %}{{ num1 }}{{ num2 }}{{ num3 }}{{ num4 }}/{% endfor %}"
+    context = {"items": ((1, 2, 3, 4), (4, 5, 6, 7))}
+    expected = "1234/4567/"
+    assert_render(template=template, context=context, expected=expected)
+
+
+def test_for_tag_with_more_variable_names_without_whitespace(assert_render):
+    template = "{% for num1,num2,num3,num4 in items %}{{ num1 }}{{ num2 }}{{ num3 }}{{ num4 }}/{% endfor %}"
     context = {"items": ((1, 2, 3, 4), (4, 5, 6, 7))}
     expected = "1234/4567/"
     assert_render(template=template, context=context, expected=expected)
