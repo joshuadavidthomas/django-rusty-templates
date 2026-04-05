@@ -241,12 +241,20 @@ impl<'t> ForLexer<'t> {
         let (index, next_index) = match self.rest.find(',') {
             Some(comma_index) if comma_index < index => {
                 let next_index = self.rest[comma_index + 1..].next_non_whitespace();
-                (comma_index, next_index + 1)
+                (comma_index, comma_index + 1 + next_index)
             }
             _ => {
-                self.state = State::Done;
-                let next_index = self.rest[index..].next_non_whitespace();
-                (index, next_index)
+                let whitespace_to_next = self.rest[index..].next_non_whitespace();
+                let after_whitespace = index + whitespace_to_next;
+                if after_whitespace < self.rest.len()
+                    && self.rest[after_whitespace..].starts_with(',')
+                {
+                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
+                    (index, after_whitespace + 1 + next_index)
+                } else {
+                    self.state = State::Done;
+                    (index, index + whitespace_to_next)
+                }
             }
         };
         let at = (self.byte, index);
@@ -260,8 +268,8 @@ impl<'t> ForLexer<'t> {
                 at: at.into(),
             }));
         }
-        self.byte += index + next_index;
-        self.rest = &self.rest[index + next_index..];
+        self.byte += next_index;
+        self.rest = &self.rest[next_index..];
         Some(Ok(ForVariableNameToken { at }))
     }
 }
