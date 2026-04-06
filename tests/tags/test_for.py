@@ -823,3 +823,66 @@ def test_for_tag_with_more_variable_names_without_whitespace(assert_render):
     context = {"items": ((1, 2, 3, 4), (4, 5, 6, 7))}
     expected = "1234/4567/"
     assert_render(template=template, context=context, expected=expected)
+
+
+def test_for_tag_unpack07(assert_parse_error):
+    """
+    This test were taken from django.
+    """
+    template = "{% for key,,value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key,,value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected expression in for loop:
+   ╭────
+ 1 │ {% for key,,value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·            ┬
+   ·            ╰── unexpected expression
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_unpack08(assert_parse_error):
+    """
+    This test were taken from django.
+    """
+    template = "{% for key,value, in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key,value, in items"
+    )
+    rusty_message = snapshot("""\
+  × Expected another variable when unpacking in for loop:
+   ╭────
+ 1 │ {% for key,value, in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·            ──┬──
+   ·              ╰── after this variable
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_without_comma(assert_parse_error):
+    """
+    This test were taken from django ie. test_for_tag_unpack06
+    """
+    template = "{% for key value in items %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected expression in for loop. Did you miss a comma when unpacking?
+   ╭────
+ 1 │ {% for key value in items %}
+   ·            ──┬──
+   ·              ╰── unexpected expression
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
