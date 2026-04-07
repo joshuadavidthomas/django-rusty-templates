@@ -29,6 +29,12 @@ pub enum ForLexerError {
         #[label("unexpected expression")]
         at: SourceSpan,
     },
+    #[error("Unexpected comma in for loop:")]
+    #[diagnostic(help("Try removing the comma, or adding a variable name before it"))]
+    UnexpectedComma {
+        #[label("here")]
+        at: SourceSpan,
+    },
 }
 
 #[derive(Clone, Error, Debug, Diagnostic, PartialEq, Eq)]
@@ -259,7 +265,7 @@ impl<'t> ForLexer<'t> {
                     let after_comma = after_whitespace + 1 + next_index;
                     if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
                         let at = (self.byte + after_comma, 1);
-                        return Some(Err(ForLexerError::UnexpectedExpression { at: at.into() }));
+                        return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
                     }
                     (index, after_whitespace + 1 + next_index)
                 } else {
