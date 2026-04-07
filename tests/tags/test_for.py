@@ -846,6 +846,25 @@ def test_for_tag_unpack07(assert_parse_error):
     )
 
 
+def test_for_tag_unpack07_whitespace(assert_parse_error):
+    template = "{% for key , , value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key , , value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected comma in for loop:
+   ╭────
+ 1 │ {% for key , , value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·              ┬
+   ·              ╰── here
+   ╰────
+  help: Try removing the comma, or adding a variable name before it
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
 def test_for_tag_unpack08(assert_parse_error):
     """
     This test were taken from django.
@@ -881,6 +900,61 @@ def test_for_tag_without_comma(assert_parse_error):
  1 │ {% for key value in items %}
    ·            ──┬──
    ·              ╰── unexpected expression
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_no_space_btw_comma_and_value(assert_parse_error):
+    template = "{% for ,value in items %}{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for ,value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected comma in for loop:
+   ╭────
+ 1 │ {% for ,value in items %}{{ value }}/{% endfor %}
+   ·        ┬
+   ·        ╰── here
+   ╰────
+  help: Try removing the comma, or adding a variable name before it
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_unexpected_token_in_loop(assert_parse_error):
+    template = "{% for key ; value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key ; value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected expression in for loop. Did you miss a comma when unpacking?
+   ╭────
+ 1 │ {% for key ; value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·            ┬
+   ·            ╰── unexpected expression
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_unexpected_token_after_comma(assert_parse_error):
+    template = "{% for key , ; value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key , ; value in items"
+    )
+    rusty_message = snapshot("""\
+  × Unexpected expression in for loop. Did you miss a comma when unpacking?
+   ╭────
+ 1 │ {% for key , ; value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·                ──┬──
+   ·                  ╰── unexpected expression
    ╰────
 """)
     assert_parse_error(
