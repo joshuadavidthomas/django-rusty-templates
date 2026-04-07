@@ -244,6 +244,11 @@ impl<'t> ForLexer<'t> {
             State::Done => return None,
         }
 
+        let first_non_ws_index = self.rest.next_non_whitespace();
+        if self.rest[first_non_ws_index..].starts_with(',') {
+            let at = (self.byte + first_non_ws_index, 1);
+            return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
+        }
         let index = self.rest.next_whitespace();
         let (index, next_index) = match self.rest.find(',') {
             Some(comma_index) if comma_index < index => {
