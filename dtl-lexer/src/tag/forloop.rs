@@ -282,6 +282,16 @@ impl<'t> ForLexer<'t> {
         let at = (self.byte, index);
         self.previous_at = Some(at);
         let name = &self.rest[..index];
+
+        if name == ';'.to_string() || name == '.'.to_string() {
+            self.rest = "";
+            self.state = State::Done;
+            return Some(Err(ForLexerError::InvalidName {
+                name: name.to_string(),
+                at: at.into(),
+            }));
+        }
+
         if name.contains(['"', '\'', '|']) {
             self.rest = "";
             self.state = State::Done;

@@ -950,11 +950,47 @@ def test_for_tag_unexpected_token_after_comma(assert_parse_error):
         "'for' tag received an invalid argument: for key , ; value in items"
     )
     rusty_message = snapshot("""\
-  × Unexpected expression in for loop. Did you miss a comma when unpacking?
+  × Invalid variable name ; in for loop:
    ╭────
  1 │ {% for key , ; value in items %}{{ key }}:{{ value }}/{% endfor %}
-   ·                ──┬──
-   ·                  ╰── unexpected expression
+   ·              ┬
+   ·              ╰── invalid variable name
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_invalid_variable_names(assert_parse_error):
+    template = "{% for key , . value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key , . value in items"
+    )
+    rusty_message = snapshot("""\
+  × Invalid variable name . in for loop:
+   ╭────
+ 1 │ {% for key , . value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·              ┬
+   ·              ╰── invalid variable name
+   ╰────
+""")
+    assert_parse_error(
+        template=template, django_message=django_message, rusty_message=rusty_message
+    )
+
+
+def test_for_tag_invalid_variable_names_02(assert_parse_error):
+    template = "{% for key , . value in items %}{{ key }}:{{ value }}/{% endfor %}"
+    django_message = snapshot(
+        "'for' tag received an invalid argument: for key , . value in items"
+    )
+    rusty_message = snapshot("""\
+  × Invalid variable name . in for loop:
+   ╭────
+ 1 │ {% for key , . value in items %}{{ key }}:{{ value }}/{% endfor %}
+   ·              ┬
+   ·              ╰── invalid variable name
    ╰────
 """)
     assert_parse_error(
