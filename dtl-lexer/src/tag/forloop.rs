@@ -234,6 +234,40 @@ impl<'t> ForLexer<'t> {
         Err(ForLexerError::UnexpectedExpression { at: at.into() })
     }
 
+    fn get_index_and_next_index(&mut self, index: usize) -> Result<(usize, usize), ForLexerError> {
+        let (index, next_index) = match self.rest.find(',') {
+            Some(comma_index) if comma_index < index => {
+                let next_index = self.rest[comma_index + 1..].next_non_whitespace();
+                let after_comma = comma_index + 1 + next_index;
+                if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
+                    let at = (self.byte + after_comma, 1);
+                    return Err(ForLexerError::UnexpectedExpression { at: at.into() });
+                }
+                (comma_index, comma_index + 1 + next_index)
+            }
+            _ => {
+                let whitespace_to_next = self.rest[index..].next_non_whitespace();
+                let after_whitespace = index + whitespace_to_next;
+                if after_whitespace < self.rest.len()
+                    && self.rest[after_whitespace..].starts_with(',')
+                {
+                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
+                    let after_comma = after_whitespace + 1 + next_index;
+                    if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
+                        let at = (self.byte + after_comma, 1);
+                        return Err(ForLexerError::UnexpectedComma { at: at.into() });
+                    }
+                    (index, after_whitespace + 1 + next_index)
+                } else {
+                    self.state = State::Done;
+                    (index, index + whitespace_to_next)
+                }
+            }
+        };
+
+        Ok((index, next_index))
+    }
+
     pub fn lex_variable_name(&mut self) -> Option<Result<ForVariableNameToken, ForLexerError>> {
         match self.state {
             State::VariableName if !self.rest.is_empty() => {}
@@ -250,34 +284,9 @@ impl<'t> ForLexer<'t> {
             return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
         }
         let index = self.rest.next_whitespace();
-        let (index, next_index) = match self.rest.find(',') {
-            Some(comma_index) if comma_index < index => {
-                let next_index = self.rest[comma_index + 1..].next_non_whitespace();
-                let after_comma = comma_index + 1 + next_index;
-                if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
-                    let at = (self.byte + after_comma, 1);
-                    return Some(Err(ForLexerError::UnexpectedExpression { at: at.into() }));
-                }
-                (comma_index, comma_index + 1 + next_index)
-            }
-            _ => {
-                let whitespace_to_next = self.rest[index..].next_non_whitespace();
-                let after_whitespace = index + whitespace_to_next;
-                if after_whitespace < self.rest.len()
-                    && self.rest[after_whitespace..].starts_with(',')
-                {
-                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
-                    let after_comma = after_whitespace + 1 + next_index;
-                    if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
-                        let at = (self.byte + after_comma, 1);
-                        return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
-                    }
-                    (index, after_whitespace + 1 + next_index)
-                } else {
-                    self.state = State::Done;
-                    (index, index + whitespace_to_next)
-                }
-            }
+        let (index, next_index) = match self.get_index_and_next_index(index) {
+            Ok(indexes) => indexes,
+            Err(e) => return Some(Err(e)),
         };
         let at = (self.byte, index);
         self.previous_at = Some(at);
