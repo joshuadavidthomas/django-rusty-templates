@@ -268,6 +268,27 @@ impl<'t> ForLexer<'t> {
         Ok((index, next_index))
     }
 
+    fn check_invalid_variable_name(&mut self, index: usize, at: At) -> Result<(), ForLexerError> {
+        let name = &self.rest[..index];
+
+        let (_, _, remainder) = lex_variable(0, name);
+        if !remainder.is_empty() {
+            return Err(ForLexerError::InvalidName {
+                name: name.to_string(),
+                at: at.into(),
+            });
+        }
+
+        if name == '.'.to_string() || name.contains(['"', '\'', '|']) {
+            return Err(ForLexerError::InvalidName {
+                name: name.to_string(),
+                at: at.into(),
+            });
+        }
+
+        Ok(())
+    }
+
     pub fn lex_variable_name(&mut self) -> Option<Result<ForVariableNameToken, ForLexerError>> {
         match self.state {
             State::VariableName if !self.rest.is_empty() => {}
@@ -290,25 +311,13 @@ impl<'t> ForLexer<'t> {
         };
         let at = (self.byte, index);
         self.previous_at = Some(at);
-        let name = &self.rest[..index];
 
-        if name == ';'.to_string() || name == '.'.to_string() {
+        if let Err(err) = self.check_invalid_variable_name(index, at) {
             self.rest = "";
             self.state = State::Done;
-            return Some(Err(ForLexerError::InvalidName {
-                name: name.to_string(),
-                at: at.into(),
-            }));
+            return Some(Err(err));
         }
 
-        if name.contains(['"', '\'', '|']) {
-            self.rest = "";
-            self.state = State::Done;
-            return Some(Err(ForLexerError::InvalidName {
-                name: name.to_string(),
-                at: at.into(),
-            }));
-        }
         self.byte += next_index;
         self.rest = &self.rest[next_index..];
         Some(Ok(ForVariableNameToken { at }))
