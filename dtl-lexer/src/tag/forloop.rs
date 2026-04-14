@@ -234,31 +234,6 @@ impl<'t> ForLexer<'t> {
         Err(ForLexerError::UnexpectedExpression { at: at.into() })
     }
 
-    fn get_index_and_next_index(&mut self, index: usize) -> Result<(usize, usize), ForLexerError> {
-        let (index, next_index) = match self.rest.find(',') {
-            Some(0) => {
-                let at = (self.byte, 1);
-                return Err(ForLexerError::UnexpectedComma { at: at.into() });
-            }
-            Some(comma_index) if comma_index < index => {
-                let next_index = self.rest[comma_index + 1..].next_non_whitespace();
-                (comma_index, comma_index + 1 + next_index)
-            }
-            _ => {
-                let after_whitespace = index + self.rest[index..].next_non_whitespace();
-                if self.rest[after_whitespace..].starts_with(',') {
-                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
-                    (index, after_whitespace + 1 + next_index)
-                } else {
-                    self.state = State::Done;
-                    (index, after_whitespace)
-                }
-            }
-        };
-
-        Ok((index, next_index))
-    }
-
     fn check_invalid_variable_name(&mut self, index: usize, at: At) -> Result<(), ForLexerError> {
         let name = &self.rest[..index];
 
@@ -291,9 +266,25 @@ impl<'t> ForLexer<'t> {
         }
 
         let index = self.rest.next_whitespace();
-        let (index, next_index) = match self.get_index_and_next_index(index) {
-            Ok(indexes) => indexes,
-            Err(e) => return Some(Err(e)),
+        let (index, next_index) = match self.rest.find(',') {
+            Some(0) => {
+                let at = (self.byte, 1);
+                return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
+            }
+            Some(comma_index) if comma_index < index => {
+                let next_index = self.rest[comma_index + 1..].next_non_whitespace();
+                (comma_index, comma_index + 1 + next_index)
+            }
+            _ => {
+                let after_whitespace = index + self.rest[index..].next_non_whitespace();
+                if self.rest[after_whitespace..].starts_with(',') {
+                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
+                    (index, after_whitespace + 1 + next_index)
+                } else {
+                    self.state = State::Done;
+                    (index, after_whitespace)
+                }
+            }
         };
         let at = (self.byte, index);
         self.previous_at = Some(at);
