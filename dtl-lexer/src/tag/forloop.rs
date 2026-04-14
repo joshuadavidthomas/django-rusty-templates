@@ -249,11 +249,6 @@ impl<'t> ForLexer<'t> {
                 let after_whitespace = index + whitespace_to_next;
                 if self.rest[after_whitespace..].starts_with(',') {
                     let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
-                    let after_comma = after_whitespace + 1 + next_index;
-                    if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
-                        let at = (self.byte + after_comma, 1);
-                        return Err(ForLexerError::UnexpectedComma { at: at.into() });
-                    }
                     (index, after_whitespace + 1 + next_index)
                 } else {
                     self.state = State::Done;
