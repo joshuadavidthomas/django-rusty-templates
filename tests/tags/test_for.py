@@ -834,12 +834,13 @@ def test_for_tag_unpack07(assert_parse_error):
         "'for' tag received an invalid argument: for key,,value in items"
     )
     rusty_message = snapshot("""\
-  × Unexpected expression in for loop:
+  × Unexpected comma in for loop:
    ╭────
  1 │ {% for key,,value in items %}{{ key }}:{{ value }}/{% endfor %}
    ·            ┬
-   ·            ╰── unexpected expression
+   ·            ╰── here
    ╰────
+  help: Try removing the comma, or adding a variable name before it
 """)
     assert_parse_error(
         template=template, django_message=django_message, rusty_message=rusty_message

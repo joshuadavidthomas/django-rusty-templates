@@ -236,21 +236,18 @@ impl<'t> ForLexer<'t> {
 
     fn get_index_and_next_index(&mut self, index: usize) -> Result<(usize, usize), ForLexerError> {
         let (index, next_index) = match self.rest.find(',') {
+            Some(0) => {
+                let at = (self.byte, 1);
+                return Err(ForLexerError::UnexpectedComma { at: at.into() });
+            }
             Some(comma_index) if comma_index < index => {
                 let next_index = self.rest[comma_index + 1..].next_non_whitespace();
-                let after_comma = comma_index + 1 + next_index;
-                if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
-                    let at = (self.byte + after_comma, 1);
-                    return Err(ForLexerError::UnexpectedExpression { at: at.into() });
-                }
                 (comma_index, comma_index + 1 + next_index)
             }
             _ => {
                 let whitespace_to_next = self.rest[index..].next_non_whitespace();
                 let after_whitespace = index + whitespace_to_next;
-                if after_whitespace < self.rest.len()
-                    && self.rest[after_whitespace..].starts_with(',')
-                {
+                if self.rest[after_whitespace..].starts_with(',') {
                     let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
                     let after_comma = after_whitespace + 1 + next_index;
                     if after_comma < self.rest.len() && self.rest[after_comma..].starts_with(',') {
@@ -299,11 +296,6 @@ impl<'t> ForLexer<'t> {
             State::Done => return None,
         }
 
-        let first_non_ws_index = self.rest.next_non_whitespace();
-        if self.rest[first_non_ws_index..].starts_with(',') {
-            let at = (self.byte + first_non_ws_index, 1);
-            return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
-        }
         let index = self.rest.next_whitespace();
         let (index, next_index) = match self.get_index_and_next_index(index) {
             Ok(indexes) => indexes,
