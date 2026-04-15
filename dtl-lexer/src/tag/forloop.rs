@@ -29,6 +29,12 @@ pub enum ForLexerError {
         #[label("unexpected expression")]
         at: SourceSpan,
     },
+    #[error("Unexpected comma in for loop:")]
+    #[diagnostic(help("Try removing the comma, or adding a variable name before it"))]
+    UnexpectedComma {
+        #[label("here")]
+        at: SourceSpan,
+    },
 }
 
 #[derive(Clone, Error, Debug, Diagnostic, PartialEq, Eq)]
@@ -228,6 +234,27 @@ impl<'t> ForLexer<'t> {
         Err(ForLexerError::UnexpectedExpression { at: at.into() })
     }
 
+    fn check_invalid_variable_name(&mut self, index: usize, at: At) -> Result<(), ForLexerError> {
+        let name = &self.rest[..index];
+
+        let (_, _, remainder) = lex_variable(0, name);
+        if !remainder.is_empty() {
+            return Err(ForLexerError::InvalidName {
+                name: name.to_string(),
+                at: at.into(),
+            });
+        }
+
+        if name == '.'.to_string() || name.contains(['"', '\'', '|']) {
+            return Err(ForLexerError::InvalidName {
+                name: name.to_string(),
+                at: at.into(),
+            });
+        }
+
+        Ok(())
+    }
+
     pub fn lex_variable_name(&mut self) -> Option<Result<ForVariableNameToken, ForLexerError>> {
         match self.state {
             State::VariableName if !self.rest.is_empty() => {}
@@ -237,31 +264,39 @@ impl<'t> ForLexer<'t> {
             }
             State::Done => return None,
         }
+
         let index = self.rest.next_whitespace();
         let (index, next_index) = match self.rest.find(',') {
+            Some(0) => {
+                let at = (self.byte, 1);
+                return Some(Err(ForLexerError::UnexpectedComma { at: at.into() }));
+            }
             Some(comma_index) if comma_index < index => {
                 let next_index = self.rest[comma_index + 1..].next_non_whitespace();
-                (comma_index, next_index + 1)
+                (comma_index, comma_index + 1 + next_index)
             }
             _ => {
-                self.state = State::Done;
-                let next_index = self.rest[index..].next_non_whitespace();
-                (index, next_index)
+                let after_whitespace = index + self.rest[index..].next_non_whitespace();
+                if self.rest[after_whitespace..].starts_with(',') {
+                    let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
+                    (index, after_whitespace + 1 + next_index)
+                } else {
+                    self.state = State::Done;
+                    (index, after_whitespace)
+                }
             }
         };
         let at = (self.byte, index);
         self.previous_at = Some(at);
-        let name = &self.rest[..index];
-        if name.contains(['"', '\'', '|']) {
+
+        if let Err(err) = self.check_invalid_variable_name(index, at) {
             self.rest = "";
             self.state = State::Done;
-            return Some(Err(ForLexerError::InvalidName {
-                name: name.to_string(),
-                at: at.into(),
-            }));
+            return Some(Err(err));
         }
-        self.byte += index + next_index;
-        self.rest = &self.rest[index + next_index..];
+
+        self.byte += next_index;
+        self.rest = &self.rest[next_index..];
         Some(Ok(ForVariableNameToken { at }))
     }
 }
