@@ -245,14 +245,13 @@ impl<'t> ForLexer<'t> {
                 (comma_index, comma_index + 1 + next_index)
             }
             _ => {
-                let whitespace_to_next = self.rest[index..].next_non_whitespace();
-                let after_whitespace = index + whitespace_to_next;
+                let after_whitespace = index + self.rest[index..].next_non_whitespace();
                 if self.rest[after_whitespace..].starts_with(',') {
                     let next_index = self.rest[after_whitespace + 1..].next_non_whitespace();
                     (index, after_whitespace + 1 + next_index)
                 } else {
                     self.state = State::Done;
-                    (index, index + whitespace_to_next)
+                    (index, after_whitespace)
                 }
             }
         };
