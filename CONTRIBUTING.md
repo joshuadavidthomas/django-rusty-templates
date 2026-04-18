@@ -57,7 +57,7 @@ If you get an `ImportError` from python, you may need to set the `PYTHONPATH` en
 export PYTHONPATH=/path/to/venv/lib/python3.x/site-packages
 ```
 
-You might also get a `ModuleNotFoundError("No module named 'tests.settings'")`, you may also add the project root directory to the `PYTHON_PATH` environment variable:
+If you get a `ModuleNotFoundError("No module named 'tests.settings'")`, you can work around the issue by adding the project root directory to the `PYTHON_PATH` environment variable:
 ```bash
 export PYTHONPATH="/path/to/django-rusty-templates:/path/to/venv/lib/python3.x/site-packages"
 ```
