@@ -3,6 +3,12 @@ set shell := ["bash", "-euox", "pipefail", "-c"]
 _default:
     @just --list --unsorted
 
+bootstrap:
+    #!/usr/bin/env bash
+    set -euox pipefail
+    # Compile translations
+    cd tests && django-admin compilemessages
+
 python-test *ARGS:
     maturin develop
     pytest {{ARGS}}
