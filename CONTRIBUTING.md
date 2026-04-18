@@ -34,14 +34,17 @@ Note: The `[dev]` dependency group is defined in `pyproject.toml` and includes a
 
 ## Running tests
 
+### Python tests with pytest
 To run the Python tests, build Django Rusty Templates in develop mode with maturin and then run pytest.
 Each change in rust needs a new execution of maturin develop.
-
 ```bash
 $ maturin develop
 $ pytest
 ```
 
+If translation tests are failing, make sure that you have compiled django translations by running `django-admin compilemessages` in `tests/` directory.
+
+### Rust tests with cargo
 You can also run the Rust tests:
 
 ```bash
@@ -52,6 +55,11 @@ If you get an `ImportError` from python, you may need to set the `PYTHONPATH` en
 
 ```bash
 export PYTHONPATH=/path/to/venv/lib/python3.x/site-packages
+```
+
+If you get a `ModuleNotFoundError("No module named 'tests.settings'")`, you can work around the issue by adding the project root directory to the `PYTHON_PATH` environment variable:
+```bash
+export PYTHONPATH="/path/to/django-rusty-templates:/path/to/venv/lib/python3.x/site-packages"
 ```
 
 ## Pre-commit hooks
