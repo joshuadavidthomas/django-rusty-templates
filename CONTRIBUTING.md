@@ -42,6 +42,7 @@ $ maturin develop
 $ pytest
 ```
 
+### Rust tests with cargo
 You can also run the Rust tests:
 
 ```bash
@@ -52,6 +53,11 @@ If you get an `ImportError` from python, you may need to set the `PYTHONPATH` en
 
 ```bash
 export PYTHONPATH=/path/to/venv/lib/python3.x/site-packages
+```
+
+You might also get a `ModuleNotFoundError("No module named 'tests.settings'")`, you may also add the project root directory to the `PYTHON_PATH` environment variable:
+```bash
+export PYTHONPATH="/path/to/django-rusty-templates:/path/to/venv/lib/python3.x/site-packages"
 ```
 
 ## Pre-commit hooks
