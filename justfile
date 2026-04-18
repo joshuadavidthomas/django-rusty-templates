@@ -1,3 +1,8 @@
+set shell := ["bash", "-euox", "pipefail", "-c"]
+
+_default:
+    @just --list --unsorted
+
 python-test *ARGS:
     maturin develop
     pytest {{ARGS}}
@@ -7,7 +12,8 @@ python-coverage:
     pytest --cov
 
 rust-coverage:
-    #!/usr/bin/bash
+    #!/usr/bin/env bash
+    set -euox pipefail
     cargo llvm-cov clean --workspace
     source <(cargo llvm-cov show-env --sh)
     cargo llvm-cov --no-report
@@ -16,7 +22,8 @@ rust-coverage:
     cargo llvm-cov report
 
 rust-coverage-browser:
-    #!/usr/bin/bash
+    #!/usr/bin/env bash
+    set -euox pipefail
     cargo llvm-cov clean --workspace
     source <(cargo llvm-cov show-env --sh)
     cargo llvm-cov --no-report
