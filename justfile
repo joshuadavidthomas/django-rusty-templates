@@ -1,3 +1,7 @@
+python-test *ARGS:
+    maturin develop
+    pytest {{ARGS}}
+
 python-coverage:
     maturin develop
     pytest --cov
