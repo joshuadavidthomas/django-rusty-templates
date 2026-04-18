@@ -34,13 +34,15 @@ Note: The `[dev]` dependency group is defined in `pyproject.toml` and includes a
 
 ## Running tests
 
+### Python tests with pytest
 To run the Python tests, build Django Rusty Templates in develop mode with maturin and then run pytest.
 Each change in rust needs a new execution of maturin develop.
-
 ```bash
 $ maturin develop
 $ pytest
 ```
+
+If translation tests are failing, make sure that you have compiled django translations by running `django-admin compilemessages` in `tests/` directory.
 
 ### Rust tests with cargo
 You can also run the Rust tests:
