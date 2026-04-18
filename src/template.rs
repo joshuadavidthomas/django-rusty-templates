@@ -84,6 +84,12 @@ pub mod django_rusty_templates {
         }
     }
 
+    #[pyclass(frozen)]
+    struct Origin {
+        #[pyo3(get)]
+        template_name: String,
+    }
+
     fn import_libraries(libraries: Bound<'_, PyAny>) -> PyResult<HashMap<String, Py<PyAny>>> {
         let py = libraries.py();
         let libraries: HashMap<String, String> = libraries.extract()?;
@@ -267,13 +273,17 @@ pub mod django_rusty_templates {
         for loader in loaders.iter_mut() {
             match loader.get_template(py, &template_name, engine.clone()) {
                 Ok(template) => return template,
-                Err(e) => tried.push(e.tried),
+                Err(mut e) if !e.tried.is_empty() => tried.append(&mut e.tried),
+                Err(_) => {}
             }
         }
         drop(loaders);
         Err(TemplateDoesNotExist::new_err((
             template_name.into_owned(),
-            tried,
+            tried
+                .into_iter()
+                .map(|(template_name, reason)| (Origin { template_name }, reason))
+                .collect::<Vec<_>>(),
         )))
     }
 
