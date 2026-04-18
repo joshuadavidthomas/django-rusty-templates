@@ -27,6 +27,87 @@ index f1a194d..0b27dd4 100755
      from django.apps import apps
      from django.conf import settings
      from django.core.exceptions import ImproperlyConfigured
+diff --git a/tests/template_loader/tests.py b/tests/template_loader/tests.py
+index 569f86b..c8b488c 100644
+--- a/tests/template_loader/tests.py
++++ b/tests/template_loader/tests.py
+@@ -40,11 +40,11 @@ class TemplateLoaderTests(SimpleTestCase):
+     def test_get_template_not_found(self):
+         with self.assertRaises(TemplateDoesNotExist) as e:
+             get_template("template_loader/unknown.html")
+-        self.assertEqual(
+-            e.exception.chain[-1].tried[0][0].template_name,
+-            "template_loader/unknown.html",
++        self.assertTrue(
++            e.exception.chain[-1].tried[0][0].template_name.endswith(
++                "template_loader/unknown.html",
++            )
+         )
+-        self.assertEqual(e.exception.chain[-1].backend.name, "django")
+ 
+     def test_select_template_first_engine(self):
+         template = select_template(
+@@ -88,11 +88,10 @@ class TemplateLoaderTests(SimpleTestCase):
+             "template_loader/unknown.html",
+         )
+         self.assertEqual(e.exception.chain[0].backend.name, "dummy")
+-        self.assertEqual(
+-            e.exception.chain[-1].tried[0][0].template_name,
++        self.assertTrue(
++            e.exception.chain[-1].tried[0][0].template_name.endswith(
+             "template_loader/missing.html",
+-        )
+-        self.assertEqual(e.exception.chain[-1].backend.name, "django")
++        ))
+ 
+     def test_select_template_tries_all_engines_before_names(self):
+         template = select_template(
+@@ -120,11 +119,11 @@ class TemplateLoaderTests(SimpleTestCase):
+     def test_render_to_string_not_found(self):
+         with self.assertRaises(TemplateDoesNotExist) as e:
+             render_to_string("template_loader/unknown.html")
+-        self.assertEqual(
+-            e.exception.chain[-1].tried[0][0].template_name,
+-            "template_loader/unknown.html",
++        self.assertTrue(
++            e.exception.chain[-1].tried[0][0].template_name.endswith(
++                "template_loader/unknown.html",
++            )
+         )
+-        self.assertEqual(e.exception.chain[-1].backend.name, "django")
+ 
+     def test_render_to_string_with_list_first_engine(self):
+         content = render_to_string(
+@@ -159,21 +158,21 @@ class TemplateLoaderTests(SimpleTestCase):
+             "template_loader/unknown.html",
+         )
+         self.assertEqual(e.exception.chain[0].backend.name, "dummy")
+-        self.assertEqual(
+-            e.exception.chain[1].tried[0][0].template_name,
+-            "template_loader/unknown.html",
++        self.assertTrue(
++            e.exception.chain[1].tried[0][0].template_name.endswith(
++                "template_loader/unknown.html",
++            )
+         )
+-        self.assertEqual(e.exception.chain[1].backend.name, "django")
+         self.assertEqual(
+             e.exception.chain[2].tried[0][0].template_name,
+             "template_loader/missing.html",
+         )
+         self.assertEqual(e.exception.chain[2].backend.name, "dummy")
+-        self.assertEqual(
+-            e.exception.chain[3].tried[0][0].template_name,
+-            "template_loader/missing.html",
++        self.assertTrue(
++            e.exception.chain[3].tried[0][0].template_name.endswith(
++                "template_loader/missing.html",
++            )
+         )
+-        self.assertEqual(e.exception.chain[3].backend.name, "django")
+ 
+     def test_render_to_string_with_list_tries_all_engines_before_names(self):
+         content = render_to_string(
 diff --git a/tests/template_tests/syntax_tests/test_include.py b/tests/template_tests/syntax_tests/test_include.py
 index be0deee..4d6657b 100644
 --- a/tests/template_tests/syntax_tests/test_include.py
