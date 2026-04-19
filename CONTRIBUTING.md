@@ -36,7 +36,9 @@ $ pip install --group dev
 Note: The `[dev]` dependency group is defined in `pyproject.toml` and includes all necessary development dependencies.
 
 ### Final step
-Run `just bootstrap`.
+**Compile translations**: run `django-admin compilemessages` in `tests/` directory
+
+Running `just bootstrap` does it for you.
 
 ## Running tests
 
@@ -48,7 +50,7 @@ $ maturin develop
 $ pytest
 ```
 
-Or you can run `just python-test`
+Running `just python-test` combines these two commands for you.
 
 ### Rust tests with cargo
 You can also run the Rust tests:
