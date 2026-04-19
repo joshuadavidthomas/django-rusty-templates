@@ -1,9 +1,12 @@
 ## Getting started with development
 
-django-rusty-templates is written in Rust, so you'll need to install the
-[Rust toolchain](https://www.rust-lang.org/tools/install).
+### Requirements
+`django-rusty-templates` is written in Rust, so you'll need to install the [Rust toolchain](https://www.rust-lang.org/tools/install).
 
-### Option 1: Using uv
+To run the `just` recipes, you will need to have [Just](https://github.com/casey/just) installed.
+
+### Python dependencies
+#### Option 1: Using uv
 
 [uv](https://docs.astral.sh/uv/) is a fast Python package installer and resolver. Using it will significantly speed up dependency installation.
 
@@ -20,7 +23,7 @@ $ uv sync
 $ source .venv/bin/activate
 ```
 
-### Option 2: Using standard Python tools
+#### Option 2: Using standard Python tools
 
 If you prefer not to use uv, you can set up your development environment with standard Python tools:
 
@@ -32,6 +35,11 @@ $ pip install --group dev
 
 Note: The `[dev]` dependency group is defined in `pyproject.toml` and includes all necessary development dependencies.
 
+### Final step
+**Compile translations**: run `django-admin compilemessages` in `tests/` directory
+
+Running `just bootstrap` does it for you.
+
 ## Running tests
 
 ### Python tests with pytest
@@ -42,7 +50,7 @@ $ maturin develop
 $ pytest
 ```
 
-If translation tests are failing, make sure that you have compiled django translations by running `django-admin compilemessages` in `tests/` directory.
+Running `just python-test` combines these two commands for you.
 
 ### Rust tests with cargo
 You can also run the Rust tests:
@@ -80,5 +88,3 @@ $ just python-coverage
 $ just rust-coverage
 $ just rust-coverage-browser
 ```
-
-You will need [Just](https://github.com/casey/just) installed.
